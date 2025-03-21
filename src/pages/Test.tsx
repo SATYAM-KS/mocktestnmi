@@ -6,74 +6,72 @@ import { toast } from 'sonner';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import QuestionCard, { Question } from '@/components/QuestionCard';
-import QuestionPalette from '@/components/QuestionPalette';
+import QuestionPalette, { TestSection, SectionedQuestion } from '@/components/QuestionPalette';
 
-// Mock questions data - this would come from the backend in a real application
-const mockQuestions: Question[] = [
-  {
-    id: 1,
-    question: "Which of the following is NOT a primitive data type in Java?",
-    options: ["int", "boolean", "String", "float"],
-    correctAnswer: 2,
-    section: "Programming Fundamentals"
-  },
-  {
-    id: 2,
-    question: "What is the time complexity of binary search algorithm?",
-    options: ["O(n)", "O(n²)", "O(log n)", "O(n log n)"],
-    correctAnswer: 2,
-    section: "Algorithms & Data Structures"
-  },
-  {
-    id: 3,
-    question: "Which of the following is used to establish a connection with a database in Java?",
-    options: ["JDBC", "JVM", "JRE", "JSP"],
-    correctAnswer: 0,
-    section: "Database Management"
-  },
-  {
-    id: 4,
-    question: "What does SQL stand for?",
-    options: ["Structured Query Language", "Simple Query Language", "Standard Query Language", "Sequential Query Language"],
-    correctAnswer: 0,
-    section: "Database Management"
-  },
-  {
-    id: 5,
-    question: "Which of the following is NOT a feature of Object-Oriented Programming?",
-    options: ["Inheritance", "Encapsulation", "Pointer Arithmetic", "Polymorphism"],
-    correctAnswer: 2,
-    section: "Programming Fundamentals"
-  },
-];
-
-// For a full test, we would have 100 questions as specified in requirements
-// Here we're using a smaller set for demonstration
-const generateFullQuestionSet = (): Question[] => {
-  const questionSet: Question[] = [...mockQuestions];
+// Define the questions with their sections
+const generateFullQuestionSet = (): (Question & SectionedQuestion)[] => {
+  const sections: TestSection[] = [
+    'Mathematics & Statistics',
+    'Logical / Abstract Reasoning', 
+    'English Comprehension & Verbal Ability',
+    'Computer Concepts'
+  ];
   
-  // Generate more questions to reach 100
-  for (let i = 6; i <= 100; i++) {
-    questionSet.push({
+  // Create the array of questions with their sections
+  const questions: (Question & SectionedQuestion)[] = [];
+  
+  // Mathematics & Statistics (1-30)
+  for (let i = 1; i <= 30; i++) {
+    questions.push({
       id: i,
-      question: `Sample Question ${i}`,
+      question: `Question ${i}`,
       options: ["Option A", "Option B", "Option C", "Option D"],
       correctAnswer: Math.floor(Math.random() * 4),
-      section: i % 5 === 0 ? "Programming Fundamentals" : 
-              i % 4 === 0 ? "Database Management" : 
-              i % 3 === 0 ? "Algorithms & Data Structures" :
-              i % 2 === 0 ? "Computer Networks" : "Operating Systems"
+      section: 'Mathematics & Statistics'
     });
   }
   
-  return questionSet;
+  // Logical / Abstract Reasoning (31-60)
+  for (let i = 31; i <= 60; i++) {
+    questions.push({
+      id: i,
+      question: `Question ${i}`,
+      options: ["Option A", "Option B", "Option C", "Option D"],
+      correctAnswer: Math.floor(Math.random() * 4),
+      section: 'Logical / Abstract Reasoning'
+    });
+  }
+  
+  // English Comprehension & Verbal Ability (61-80)
+  for (let i = 61; i <= 80; i++) {
+    questions.push({
+      id: i,
+      question: `Question ${i}`,
+      options: ["Option A", "Option B", "Option C", "Option D"],
+      correctAnswer: Math.floor(Math.random() * 4),
+      section: 'English Comprehension & Verbal Ability'
+    });
+  }
+  
+  // Computer Concepts (81-100)
+  for (let i = 81; i <= 100; i++) {
+    questions.push({
+      id: i,
+      question: `Question ${i}`,
+      options: ["Option A", "Option B", "Option C", "Option D"],
+      correctAnswer: Math.floor(Math.random() * 4),
+      section: 'Computer Concepts'
+    });
+  }
+  
+  return questions;
 };
 
 type QuestionStatus = 'unattempted' | 'seen' | 'attempted';
 
 const Test = () => {
   const navigate = useNavigate();
-  const [questions] = useState<Question[]>(generateFullQuestionSet());
+  const [questions] = useState<(Question & SectionedQuestion)[]>(generateFullQuestionSet());
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<number, number>>({});
   const [questionStatuses, setQuestionStatuses] = useState<Record<number, QuestionStatus>>({});
@@ -139,6 +137,38 @@ const Test = () => {
   const attemptedCount = Object.keys(userAnswers).length;
   const remainingCount = questions.length - attemptedCount;
   
+  // Calculate section progress
+  const sectionProgress = {
+    'Mathematics & Statistics': {
+      total: 30,
+      attempted: Object.keys(userAnswers).filter(key => {
+        const qNum = parseInt(key);
+        return qNum >= 1 && qNum <= 30;
+      }).length
+    },
+    'Logical / Abstract Reasoning': {
+      total: 30,
+      attempted: Object.keys(userAnswers).filter(key => {
+        const qNum = parseInt(key);
+        return qNum >= 31 && qNum <= 60;
+      }).length
+    },
+    'English Comprehension & Verbal Ability': {
+      total: 20,
+      attempted: Object.keys(userAnswers).filter(key => {
+        const qNum = parseInt(key);
+        return qNum >= 61 && qNum <= 80;
+      }).length
+    },
+    'Computer Concepts': {
+      total: 20,
+      attempted: Object.keys(userAnswers).filter(key => {
+        const qNum = parseInt(key);
+        return qNum >= 81 && qNum <= 100;
+      }).length
+    }
+  };
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -156,6 +186,16 @@ const Test = () => {
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Main Content */}
             <div className="flex-grow order-2 lg:order-1">
+              {/* Current Section Indicator */}
+              <div className="mb-4">
+                <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 font-medium rounded-full text-sm">
+                  Section: {currentQuestion.section}
+                </span>
+                <span className="ml-3 text-sm text-gray-500">
+                  Question {currentQuestionNumber} of 100
+                </span>
+              </div>
+              
               {/* Question Card */}
               <QuestionCard
                 question={currentQuestion}
@@ -197,7 +237,7 @@ const Test = () => {
               <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
                 <h3 className="text-lg font-medium mb-3">Test Progress</h3>
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
-                  <span>Attempted</span>
+                  <span>Overall Attempted</span>
                   <span className="font-medium">{attemptedCount} / {questions.length}</span>
                 </div>
                 
@@ -216,14 +256,64 @@ const Test = () => {
                 </button>
                 
                 {showSummary && (
-                  <div className="mt-3 text-sm space-y-1">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Attempted</span>
-                      <span className="font-medium text-green-600">{attemptedCount}</span>
+                  <div className="mt-3 text-sm space-y-3">
+                    <div className="space-y-1">
+                      <div className="flex justify-between font-medium">
+                        <span className="text-gray-700">Mathematics & Statistics</span>
+                        <span className="text-green-600">{sectionProgress['Mathematics & Statistics'].attempted}/{sectionProgress['Mathematics & Statistics'].total}</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-1.5">
+                        <div 
+                          className="bg-green-500 rounded-full h-1.5"
+                          style={{ width: `${(sectionProgress['Mathematics & Statistics'].attempted / sectionProgress['Mathematics & Statistics'].total) * 100}%` }}
+                        ></div>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Not Attempted</span>
-                      <span className="font-medium text-red-600">{remainingCount}</span>
+                    
+                    <div className="space-y-1">
+                      <div className="flex justify-between font-medium">
+                        <span className="text-gray-700">Logical / Abstract Reasoning</span>
+                        <span className="text-purple-600">{sectionProgress['Logical / Abstract Reasoning'].attempted}/{sectionProgress['Logical / Abstract Reasoning'].total}</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-1.5">
+                        <div 
+                          className="bg-purple-500 rounded-full h-1.5"
+                          style={{ width: `${(sectionProgress['Logical / Abstract Reasoning'].attempted / sectionProgress['Logical / Abstract Reasoning'].total) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <div className="flex justify-between font-medium">
+                        <span className="text-gray-700">English Comprehension</span>
+                        <span className="text-blue-600">{sectionProgress['English Comprehension & Verbal Ability'].attempted}/{sectionProgress['English Comprehension & Verbal Ability'].total}</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-1.5">
+                        <div 
+                          className="bg-blue-500 rounded-full h-1.5"
+                          style={{ width: `${(sectionProgress['English Comprehension & Verbal Ability'].attempted / sectionProgress['English Comprehension & Verbal Ability'].total) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <div className="flex justify-between font-medium">
+                        <span className="text-gray-700">Computer Concepts</span>
+                        <span className="text-orange-600">{sectionProgress['Computer Concepts'].attempted}/{sectionProgress['Computer Concepts'].total}</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-1.5">
+                        <div 
+                          className="bg-orange-500 rounded-full h-1.5"
+                          style={{ width: `${(sectionProgress['Computer Concepts'].attempted / sectionProgress['Computer Concepts'].total) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="pt-2 border-t">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Not Attempted</span>
+                        <span className="font-medium text-red-600">{remainingCount}</span>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -235,6 +325,7 @@ const Test = () => {
                 questionStatuses={questionStatuses}
                 currentQuestion={currentQuestionNumber}
                 onQuestionSelect={navigateToQuestion}
+                questions={questions}
               />
             </div>
           </div>

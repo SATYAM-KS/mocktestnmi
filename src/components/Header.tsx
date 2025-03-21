@@ -45,7 +45,7 @@ const Header = () => {
               <img
                 src="/lovable-uploads/f43f82f7-7d13-4e58-8f7e-70aca1c5b98a.png"
                 alt="NMIET Logo"
-                className="h-20 w-auto animate-pulse hover:animate-none transition-all duration-300"
+                className="h-20 w-auto transition-all duration-300"
               />
             </Link>
           </div>
