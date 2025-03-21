@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, AlertCircle, Save, X } from 'lucide-react';
@@ -17,7 +16,6 @@ const generateFullQuestionSet = (): (Question & SectionedQuestion)[] => {
     'Computer Concepts'
   ];
   
-  // Create the array of questions with their sections
   const questions: (Question & SectionedQuestion)[] = [];
   
   // Mathematics & Statistics (1-30)
@@ -81,7 +79,6 @@ const Test = () => {
   const currentQuestion = questions[currentQuestionIndex];
   const currentQuestionNumber = currentQuestionIndex + 1;
   
-  // Mark question as seen when viewed
   useEffect(() => {
     if (!questionStatuses[currentQuestionNumber] || questionStatuses[currentQuestionNumber] === 'unattempted') {
       setQuestionStatuses(prev => ({
@@ -124,20 +121,17 @@ const Test = () => {
   };
   
   const handleSubmitTest = () => {
-    // Store answers in local storage for result page
     localStorage.setItem('userAnswers', JSON.stringify(userAnswers));
     localStorage.setItem('testCompleted', 'true');
     
     toast.success('Test submitted successfully');
     
-    // Navigate to login to view results
     navigate('/login');
   };
   
   const attemptedCount = Object.keys(userAnswers).length;
   const remainingCount = questions.length - attemptedCount;
   
-  // Calculate section progress
   const sectionProgress = {
     'Mathematics & Statistics': {
       total: 30,
@@ -175,7 +169,6 @@ const Test = () => {
       
       <main className="flex-grow pt-40 pb-16">
         <div className="container mx-auto px-4 md:px-6">
-          {/* Test Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold">MCA Mock Test</h1>
             <p className="text-gray-600">
@@ -184,9 +177,7 @@ const Test = () => {
           </div>
           
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Main Content */}
             <div className="flex-grow order-2 lg:order-1">
-              {/* Current Section Indicator */}
               <div className="mb-4">
                 <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 font-medium rounded-full text-sm">
                   Section: {currentQuestion.section}
@@ -196,7 +187,6 @@ const Test = () => {
                 </span>
               </div>
               
-              {/* Question Card */}
               <QuestionCard
                 question={currentQuestion}
                 questionNumber={currentQuestionNumber}
@@ -204,7 +194,6 @@ const Test = () => {
                 onOptionSelect={handleOptionSelect}
               />
               
-              {/* Navigation Buttons */}
               <div className="flex justify-between mt-6">
                 <button
                   onClick={handlePrevQuestion}
@@ -231,9 +220,7 @@ const Test = () => {
               </div>
             </div>
             
-            {/* Sidebar */}
             <div className="lg:w-80 order-1 lg:order-2">
-              {/* Test Progress */}
               <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
                 <h3 className="text-lg font-medium mb-3">Test Progress</h3>
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
@@ -319,7 +306,6 @@ const Test = () => {
                 )}
               </div>
               
-              {/* Question Palette */}
               <QuestionPalette
                 totalQuestions={questions.length}
                 questionStatuses={questionStatuses}
@@ -332,7 +318,6 @@ const Test = () => {
         </div>
       </main>
       
-      {/* Submit Confirmation Modal */}
       {isSubmitModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
           <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6 animate-scale-in">
