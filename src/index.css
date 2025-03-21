@@ -104,19 +104,19 @@
   }
   
   .glass-effect {
-    @apply bg-white/70 backdrop-blur-glass shadow-glass border border-white/20;
+    @apply bg-white/70 backdrop-blur-lg shadow-md border border-white/20 hover:border-white/30 transition-all;
   }
   
   .glass-effect:hover {
-    @apply shadow-glass-hover;
+    @apply shadow-lg bg-white/80;
   }
   
   .question-option {
-    @apply py-3 px-4 rounded-md border border-gray-200 hover:border-nmiet-blue transition-all duration-300 cursor-pointer;
+    @apply py-3 px-4 rounded-md border border-gray-200 hover:border-blue-500 transition-all duration-300 cursor-pointer hover:shadow-md hover:bg-blue-50/30;
   }
   
   .question-option.selected {
-    @apply border-nmiet-blue bg-nmiet-blue/10;
+    @apply border-blue-500 bg-blue-50 shadow-md;
   }
   
   .page-transition-enter {
@@ -124,7 +124,7 @@
   }
   
   .palette-number {
-    @apply w-10 h-10 flex items-center justify-center rounded-md text-sm font-medium cursor-pointer transition-all duration-300;
+    @apply w-10 h-10 flex items-center justify-center rounded-md text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105;
   }
   
   .palette-number.unattempted {
@@ -140,19 +140,39 @@
   }
   
   .button-primary {
-    @apply px-6 py-2.5 bg-nmiet-blue text-white rounded-md hover:bg-nmiet-darkblue transition-all duration-300;
+    @apply px-6 py-2.5 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-md hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg;
   }
   
   .button-secondary {
-    @apply px-6 py-2.5 bg-nmiet-gray text-nmiet-darkgray rounded-md hover:bg-gray-200 transition-all duration-300;
+    @apply px-6 py-2.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md;
   }
   
   .section-title {
-    @apply relative inline-block pb-2 text-2xl font-medium;
+    @apply relative inline-block pb-2 text-2xl font-medium bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent;
   }
   
   .section-title::after {
     content: '';
-    @apply absolute bottom-0 left-0 w-full h-0.5 bg-nmiet-blue rounded-full;
+    @apply absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full;
+  }
+
+  /* New Animation Classes */
+  .hover-scale {
+    @apply transition-transform duration-300 transform hover:scale-105;
+  }
+
+  .hover-lift {
+    @apply transition-transform duration-300 transform hover:-translate-y-1;
+  }
+
+  .animated-gradient {
+    background-size: 200% 200%;
+    animation: gradientShift 5s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 }
