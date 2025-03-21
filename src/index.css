@@ -1,3 +1,6 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -97,5 +100,59 @@
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  .glass-effect {
+    @apply bg-white/70 backdrop-blur-glass shadow-glass border border-white/20;
+  }
+  
+  .glass-effect:hover {
+    @apply shadow-glass-hover;
+  }
+  
+  .question-option {
+    @apply py-3 px-4 rounded-md border border-gray-200 hover:border-nmiet-blue transition-all duration-300 cursor-pointer;
+  }
+  
+  .question-option.selected {
+    @apply border-nmiet-blue bg-nmiet-blue/10;
+  }
+  
+  .page-transition-enter {
+    @apply animate-fade-in animate-slide-in;
+  }
+  
+  .palette-number {
+    @apply w-10 h-10 flex items-center justify-center rounded-md text-sm font-medium cursor-pointer transition-all duration-300;
+  }
+  
+  .palette-number.unattempted {
+    @apply bg-gray-100 text-gray-700 hover:bg-gray-200;
+  }
+  
+  .palette-number.seen {
+    @apply bg-orange-100 text-orange-700 hover:bg-orange-200;
+  }
+  
+  .palette-number.attempted {
+    @apply bg-green-100 text-green-700 hover:bg-green-200;
+  }
+  
+  .button-primary {
+    @apply px-6 py-2.5 bg-nmiet-blue text-white rounded-md hover:bg-nmiet-darkblue transition-all duration-300;
+  }
+  
+  .button-secondary {
+    @apply px-6 py-2.5 bg-nmiet-gray text-nmiet-darkgray rounded-md hover:bg-gray-200 transition-all duration-300;
+  }
+  
+  .section-title {
+    @apply relative inline-block pb-2 text-2xl font-medium;
+  }
+  
+  .section-title::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-full h-0.5 bg-nmiet-blue rounded-full;
   }
 }
