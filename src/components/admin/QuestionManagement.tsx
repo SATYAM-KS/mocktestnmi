@@ -1,212 +1,170 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Plus, Trash, Edit, Save, X, Search, Filter } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Pencil, Trash, Plus } from 'lucide-react';
 import { Question } from '@/components/QuestionCard';
 import QuestionModal from './QuestionModal';
 
-interface Section {
-  id: string;
-  name: string;
-}
+type QuestionWithRequiredCorrectAnswer = Omit<Question, 'correctAnswer'> & {
+  correctAnswer: number;
+};
 
 interface QuestionManagementProps {
-  questions: Question[];
-  sections: Section[];
-  setQuestions: React.Dispatch<React.SetStateAction<Question[]>>;
+  questions: QuestionWithRequiredCorrectAnswer[];
+  setQuestions: React.Dispatch<React.SetStateAction<QuestionWithRequiredCorrectAnswer[]>>;
+  sections: { id: string; name: string }[];
 }
 
-const QuestionManagement = ({ questions, sections, setQuestions }: QuestionManagementProps) => {
+const QuestionManagement = ({ questions, setQuestions, sections }: QuestionManagementProps) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState<QuestionWithRequiredCorrectAnswer | null>(null);
+  const [selectedSectionFilter, setSelectedSectionFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [sectionFilter, setSectionFilter] = useState('all');
-  const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
-  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
-  const [newQuestion, setNewQuestion] = useState({
-    question: '',
-    options: ['', '', '', ''],
-    correctAnswer: 0,
-    section: '',
-  });
 
   const handleAddQuestion = () => {
-    // Validate form
-    if (!newQuestion.question || newQuestion.options.some(option => !option) || !newQuestion.section) {
-      toast.error('Please fill all fields');
-      return;
-    }
-    
-    // Add new question
-    const newId = questions.length > 0 ? Math.max(...questions.map(q => q.id)) + 1 : 1;
-    
-    setQuestions([
-      ...questions,
-      {
-        id: newId,
-        question: newQuestion.question,
-        options: [...newQuestion.options],
-        correctAnswer: newQuestion.correctAnswer,
-        section: newQuestion.section
-      }
-    ]);
-    
-    // Reset form
-    setNewQuestion({
-      question: '',
-      options: ['', '', '', ''],
-      correctAnswer: 0,
-      section: '',
-    });
-    
-    setShowAddQuestionModal(false);
-    toast.success('Question added successfully');
-  };
-  
-  const handleUpdateQuestion = () => {
-    if (!editingQuestion) return;
-    
-    // Update question
-    setQuestions(
-      questions.map(q => 
-        q.id === editingQuestion.id ? editingQuestion : q
-      )
-    );
-    
-    setEditingQuestion(null);
-    toast.success('Question updated successfully');
-  };
-  
-  const handleDeleteQuestion = (id: number) => {
-    setQuestions(questions.filter(q => q.id !== id));
-    toast.success('Question deleted successfully');
+    setCurrentQuestion(null);
+    setIsModalOpen(true);
   };
 
-  const filteredQuestions = questions.filter(question => {
-    const matchesSearch = question.question.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSection = sectionFilter === 'all' || question.section === sectionFilter;
-    
-    return matchesSearch && matchesSection;
-  });
+  const handleEditQuestion = (question: QuestionWithRequiredCorrectAnswer) => {
+    setCurrentQuestion(question);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteQuestion = (questionId: number) => {
+    if (confirm('Are you sure you want to delete this question?')) {
+      setQuestions(questions.filter(q => q.id !== questionId));
+      toast.success('Question deleted successfully');
+    }
+  };
+
+  const handleSaveQuestion = (question: QuestionWithRequiredCorrectAnswer) => {
+    if (currentQuestion) {
+      // Edit existing question
+      setQuestions(questions.map(q => q.id === question.id ? question : q));
+      toast.success('Question updated successfully');
+    } else {
+      // Add new question
+      const newId = questions.length > 0 ? Math.max(...questions.map(q => q.id)) + 1 : 1;
+      setQuestions([...questions, { ...question, id: newId }]);
+      toast.success('Question added successfully');
+    }
+    setIsModalOpen(false);
+  };
+
+  const filteredQuestions = questions
+    .filter(q => selectedSectionFilter === 'all' || q.section === selectedSectionFilter)
+    .filter(q => q.question.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  const totalQuestions = questions.length;
+  const filteredCount = filteredQuestions.length;
+
+  // Calculate section stats
+  const sectionStats = sections.map(section => ({
+    name: section.name,
+    count: questions.filter(q => q.section === section.name).length
+  }));
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <div className="flex items-center">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search questions..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-4 py-2 border rounded-md focus:border-nmiet-blue focus:outline-none focus:ring-1 focus:ring-nmiet-blue w-full sm:w-auto"
-            />
-          </div>
-          
-          <div className="ml-2">
-            <select
-              value={sectionFilter}
-              onChange={(e) => setSectionFilter(e.target.value)}
-              className="pl-4 pr-8 py-2 border rounded-md focus:border-nmiet-blue focus:outline-none focus:ring-1 focus:ring-nmiet-blue appearance-none"
-            >
-              <option value="all">All Sections</option>
-              {sections.map((section) => (
-                <option key={section.id} value={section.name}>
-                  {section.name}
-                </option>
-              ))}
-            </select>
-            <Filter className="relative inline-flex -ml-6 h-4 w-4 text-gray-400 pointer-events-none" />
-          </div>
-        </div>
-        
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">Test Questions</h2>
         <button
-          onClick={() => setShowAddQuestionModal(true)}
+          onClick={handleAddQuestion}
           className="button-primary inline-flex items-center"
         >
           <Plus className="mr-2 h-4 w-4" /> Add Question
         </button>
       </div>
       
-      {filteredQuestions.length > 0 ? (
-        <div className="space-y-4">
-          {filteredQuestions.map((question) => (
-            <div key={question.id} className="border rounded-md p-4">
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex items-center">
-                  <span className="text-sm font-medium text-gray-500">{question.section}</span>
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => setEditingQuestion(question)}
-                    className="p-1 rounded-md text-gray-500 hover:text-nmiet-blue hover:bg-nmiet-blue/10"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteQuestion(question.id)}
-                    className="p-1 rounded-md text-gray-500 hover:text-red-600 hover:bg-red-50"
-                  >
-                    <Trash className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              
-              <h3 className="text-base font-medium mb-2">{question.question}</h3>
-              
-              <div className="space-y-2 ml-4">
-                {question.options.map((option, index) => (
-                  <div key={index} className="flex items-center">
-                    <div 
-                      className={cn(
-                        "h-4 w-4 rounded-full mr-2 flex items-center justify-center",
-                        index === question.correctAnswer 
-                          ? "bg-green-100 text-green-600 border border-green-600" 
-                          : "bg-gray-100 text-gray-400 border border-gray-300"
-                      )}
-                    >
-                      {index === question.correctAnswer && (
-                        <div className="h-1.5 w-1.5 rounded-full bg-green-600" />
-                      )}
-                    </div>
-                    <span className={cn(
-                      "text-sm",
-                      index === question.correctAnswer ? "text-green-600 font-medium" : "text-gray-600"
-                    )}>
-                      {option}
-                    </span>
-                  </div>
-                ))}
-              </div>
+      <div className="mb-6 bg-white rounded-lg shadow-sm border p-4">
+        <div className="text-sm text-gray-600 mb-2">Total Questions: {totalQuestions}</div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+          {sectionStats.map((stat) => (
+            <div key={stat.name} className="bg-gray-50 p-2 rounded border text-center">
+              <div className="text-xs text-gray-500">{stat.name}</div>
+              <div className="font-semibold">{stat.count}</div>
             </div>
           ))}
         </div>
+      </div>
+      
+      <div className="mb-6 flex flex-col md:flex-row gap-3">
+        <div className="flex-1">
+          <input
+            type="text"
+            placeholder="Search questions..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full rounded-md border border-gray-300 py-2 px-3 shadow-sm focus:border-nmiet-blue focus:outline-none focus:ring-1 focus:ring-nmiet-blue"
+          />
+        </div>
+        <div>
+          <select
+            value={selectedSectionFilter}
+            onChange={(e) => setSelectedSectionFilter(e.target.value)}
+            className="rounded-md border border-gray-300 py-2 px-3 shadow-sm focus:border-nmiet-blue focus:outline-none focus:ring-1 focus:ring-nmiet-blue w-full md:w-auto"
+          >
+            <option value="all">All Sections</option>
+            {sections.map((section) => (
+              <option key={section.id} value={section.name}>{section.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      
+      {filteredCount === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed">
+          <p className="text-gray-500">No questions found matching your criteria</p>
+        </div>
       ) : (
-        <div className="text-center py-8">
-          <p className="text-gray-500">No questions found matching your search criteria.</p>
+        <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Question</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Section</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredQuestions.map((question) => (
+                  <tr key={question.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{question.id}</td>
+                    <td className="px-6 py-4 whitespace-normal text-sm text-gray-500">
+                      <div className="max-w-md truncate">{question.question}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{question.section}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        onClick={() => handleEditQuestion(question)}
+                        className="text-nmiet-blue hover:text-nmiet-darkblue mr-3"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteQuestion(question.id)}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        <Trash className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
-
-      {/* Add Question Modal */}
-      {showAddQuestionModal && (
-        <QuestionModal
-          title="Add New Question"
-          question={newQuestion}
-          setQuestion={setNewQuestion as any}
-          onSave={handleAddQuestion}
-          onClose={() => setShowAddQuestionModal(false)}
-          sections={sections}
-        />
-      )}
       
-      {/* Edit Question Modal */}
-      {editingQuestion && (
+      {isModalOpen && (
         <QuestionModal
-          title="Edit Question"
-          question={editingQuestion}
-          setQuestion={setEditingQuestion as any}
-          onSave={handleUpdateQuestion}
-          onClose={() => setEditingQuestion(null)}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveQuestion}
+          question={currentQuestion}
           sections={sections}
         />
       )}
